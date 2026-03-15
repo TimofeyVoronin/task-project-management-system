@@ -23,12 +23,12 @@ environ.Env.read_env("/workspace/.env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!f(_-=p@+l#-t+v_(i3q3e8v857dk3t*!3f@k6w+ylv&t=(npk'
+SECRET_KEY = env("NOTIFICATION_SERVICE_SECRET_KEY", default="dev-notification-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", default=True)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
 
 
 # Application definition
@@ -112,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = env("DJANGO_TIME_ZONE", default="Asia/Krasnoyarsk")
 
 USE_I18N = True
 
