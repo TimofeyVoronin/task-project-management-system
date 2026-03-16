@@ -12,16 +12,16 @@ services:
     networks:
       - djangonetwork
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-task_management}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-task_management}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    
+
   redis:
     image: redis:7-alpine
     container_name: task_pm_redis
     restart: unless-stopped
-    ports: 
+    ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
@@ -50,50 +50,79 @@ services:
       - djangonetwork
 
   auth_service:
-    image: python:3.12-slim
+    build:
+      context: ./services/auth_service
+      dockerfile: Dockerfile
     container_name: task_pm_auth_service
+    restart: unless-stopped
     working_dir: /app
-    command: sh -c "echo auth_service placeholder && sleep infinity"
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./services/auth_service:/app
+      - ./services/auth_service/app:/app
+      - ./.env:/workspace/.env:ro
     env_file:
       - ./.env
+    ports:
+      - "8001:8000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks:
       - djangonetwork
-  
+
   core_service:
-    image: python:3.12-slim
+    build:
+      context: ./services/core_service
+      dockerfile: Dockerfile
     container_name: task_pm_core_service
+    restart: unless-stopped
     working_dir: /app
-    command: sh -c "echo core_service placeholder && sleep infinity"
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./services/core_service:/app
+      - ./services/core_service/app:/app
+      - ./.env:/workspace/.env:ro
     env_file:
       - ./.env
+    ports:
+      - "8002:8000"
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks:
       - djangonetwork
 
   notification_service:
-    image: python:3.12-slim
+    build:
+      context: ./services/notification_service
+      dockerfile: Dockerfile
     container_name: task_pm_notification_service
+    restart: unless-stopped
     working_dir: /app
-    command: sh -c "echo notification_service placeholder && sleep infinity"
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./services/notification_service:/app
+      - ./services/notification_service/app:/app
+      - ./.env:/workspace/.env:ro
     env_file:
       - ./.env
+    ports:
+      - "8003:8000"
     depends_on:
-      - postgres
-      - redis
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks:
       - djangonetwork
-
 
 networks:
   djangonetwork:
