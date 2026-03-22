@@ -38,7 +38,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP"]
+select = ["E", "F", "B", "UP"]
 ignore = []
 
 [tool.ruff.format]
