@@ -3,6 +3,7 @@ from authentication.serializers import (
     UserLoginSerializer,
     UserLogoutSerializer,
     UserMeSerializer,
+    UserProfileUpdateSerializer,
     UserRegistrationResponseSerializer,
     UserRegistrationSerializer,
 )
@@ -51,6 +52,18 @@ class UserMeAPIView(APIView):
 
     def get(self, request):
         output_serializer = UserMeSerializer(request.user)
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        input_serializer = UserProfileUpdateSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        input_serializer.is_valid(raise_exception=True)
+        user = input_serializer.save()
+
+        output_serializer = UserMeSerializer(user)
         return Response(output_serializer.data, status=status.HTTP_200_OK)
 
 

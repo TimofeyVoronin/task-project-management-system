@@ -81,3 +81,23 @@ class UserLogoutSerializer(serializers.Serializer):
                 "Invalid or expired refresh token."
             ) from err
         return value
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("email", "username")
+
+    def validate_email(self, value):
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(email=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
+    def validate_username(self, value):
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(username=value).exists():
+            raise serializers.ValidationError(
+                "A user with this username already exists."
+            )
+        return value
