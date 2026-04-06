@@ -43,7 +43,14 @@ class UserLoginAPIView(APIView):
         )
         input_serializer.is_valid(raise_exception=True)
 
-        result = LoginService.login_user(user=input_serializer.validated_data["user"])
+        ip_address = request.META.get("REMOTE_ADDR")
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
+
+        result = LoginService.login_user(
+            user=input_serializer.validated_data["user"],
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
 
         output_serializer = UserLoginResponseSerializer(result)
 
