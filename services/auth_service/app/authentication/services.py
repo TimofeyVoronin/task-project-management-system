@@ -1,3 +1,4 @@
+from authentication.models import LoginHistory
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -14,9 +15,27 @@ class RegistrationService:
         )
 
 
+class LoginHistoryService:
+    @staticmethod
+    def create_login_record(
+        *, user: User, ip_address: str | None, user_agent: str
+    ) -> None:
+        LoginHistory.objects.create(
+            user=user,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+
+
 class LoginService:
     @staticmethod
-    def login_user(*, user: User) -> dict:
+    def login_user(*, user: User, ip_address: str | None, user_agent: str) -> dict:
+        LoginHistoryService.create_login_record(
+            user=user,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+
         refresh = RefreshToken.for_user(user)
 
         return {
