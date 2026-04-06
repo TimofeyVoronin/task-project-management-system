@@ -1,3 +1,4 @@
+from authentication.permissions import IsOwner
 from authentication.serializers import (
     ChangePasswordSerializer,
     UserLoginResponseSerializer,
@@ -15,12 +16,15 @@ from authentication.services import (
     RegistrationService,
 )
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 
 class UserRegistrationAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         input_serializer = UserRegistrationSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
@@ -36,6 +40,8 @@ class UserRegistrationAPIView(APIView):
 
 
 class UserLoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         input_serializer = UserLoginSerializer(
             data=request.data,
@@ -61,15 +67,23 @@ class UserLoginAPIView(APIView):
 
 
 class UserMeAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    def get_object(self):
+        obj = self.request.user
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get(self, request):
-        output_serializer = UserMeSerializer(request.user)
+        user = self.get_object()
+        output_serializer = UserMeSerializer(user)
         return Response(output_serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request):
+        user = self.get_object()
+
         input_serializer = UserProfileUpdateSerializer(
-            request.user,
+            user,
             data=request.data,
             partial=True,
         )
@@ -113,3 +127,7 @@ class ChangePasswordAPIView(APIView):
             {"detail": "Password changed successfully."},
             status=status.HTTP_200_OK,
         )
+
+
+class PublicTokenRefreshView(TokenRefreshView):
+    permission_classes = [AllowAny]
