@@ -1,11 +1,13 @@
 from authentication.serializers import (
     UserLoginResponseSerializer,
     UserLoginSerializer,
+    UserMeSerializer,
     UserRegistrationResponseSerializer,
     UserRegistrationSerializer,
 )
 from authentication.services import LoginService, RegistrationService
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -41,3 +43,11 @@ class UserLoginAPIView(APIView):
             output_serializer.data,
             status=status.HTTP_200_OK,
         )
+
+
+class UserMeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        output_serializer = UserMeSerializer(request.user)
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
