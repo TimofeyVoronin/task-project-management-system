@@ -1,8 +1,10 @@
 from authentication.serializers import (
+    UserLoginResponseSerializer,
+    UserLoginSerializer,
     UserRegistrationResponseSerializer,
     UserRegistrationSerializer,
 )
-from authentication.services import RegistrationService
+from authentication.services import LoginService, RegistrationService
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,4 +22,22 @@ class UserRegistrationAPIView(APIView):
         return Response(
             output_serializer.data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class UserLoginAPIView(APIView):
+    def post(self, request):
+        input_serializer = UserLoginSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        input_serializer.is_valid(raise_exception=True)
+
+        result = LoginService.login_user(user=input_serializer.validated_data["user"])
+
+        output_serializer = UserLoginResponseSerializer(result)
+
+        return Response(
+            output_serializer.data,
+            status=status.HTTP_200_OK,
         )
