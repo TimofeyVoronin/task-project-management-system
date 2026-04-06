@@ -1,4 +1,5 @@
 from authentication.serializers import (
+    ChangePasswordSerializer,
     UserLoginResponseSerializer,
     UserLoginSerializer,
     UserLogoutSerializer,
@@ -7,7 +8,12 @@ from authentication.serializers import (
     UserRegistrationResponseSerializer,
     UserRegistrationSerializer,
 )
-from authentication.services import LoginService, LogoutService, RegistrationService
+from authentication.services import (
+    ChangePasswordService,
+    LoginService,
+    LogoutService,
+    RegistrationService,
+)
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -79,3 +85,24 @@ class UserLogoutAPIView(APIView):
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        input_serializer = ChangePasswordSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        input_serializer.is_valid(raise_exception=True)
+
+        ChangePasswordService.change_password(
+            user=request.user,
+            new_password=input_serializer.validated_data["new_password"],
+        )
+
+        return Response(
+            {"detail": "Password changed successfully."},
+            status=status.HTTP_200_OK,
+        )

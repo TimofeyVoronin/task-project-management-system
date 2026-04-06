@@ -101,3 +101,36 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
                 "A user with this username already exists."
             )
         return value
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, trim_whitespace=False)
+    new_password = serializers.CharField(write_only=True, trim_whitespace=False)
+    new_password_confirm = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+    )
+
+    def validate_old_password(self, value):
+        user = self.context["request"].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Old password is incorrect.")
+        return value
+
+    def validate(self, attrs):
+        new_password = attrs.get("new_password")
+        new_password_confirm = attrs.get("new_password_confirm")
+        user = self.context["request"].user
+
+        if new_password != new_password_confirm:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "New passwords do not match."}
+            )
+
+        if attrs.get("old_password") == new_password:
+            raise serializers.ValidationError(
+                {"new_password": "New password must be different from old password."}
+            )
+
+        validate_password(new_password, user=user)
+        return attrs
