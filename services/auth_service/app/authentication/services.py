@@ -28,3 +28,10 @@ class LoginService:
                 "username": user.username,
             },
         }
+
+
+class LogoutService:
+    @staticmethod
+    def logout_user(*, refresh_token: str) -> None:
+        token = RefreshToken(refresh_token)
+        token.blacklist()

@@ -1,11 +1,12 @@
 from authentication.serializers import (
     UserLoginResponseSerializer,
     UserLoginSerializer,
+    UserLogoutSerializer,
     UserMeSerializer,
     UserRegistrationResponseSerializer,
     UserRegistrationSerializer,
 )
-from authentication.services import LoginService, RegistrationService
+from authentication.services import LoginService, LogoutService, RegistrationService
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -51,3 +52,17 @@ class UserMeAPIView(APIView):
     def get(self, request):
         output_serializer = UserMeSerializer(request.user)
         return Response(output_serializer.data, status=status.HTTP_200_OK)
+
+
+class UserLogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        input_serializer = UserLogoutSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+
+        LogoutService.logout_user(
+            refresh_token=input_serializer.validated_data["refresh"]
+        )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
