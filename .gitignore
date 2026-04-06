@@ -22,6 +22,10 @@ staticfiles/
 .coverage
 htmlcov/
 
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+
 # IDE
 .vscode/
 .idea/
