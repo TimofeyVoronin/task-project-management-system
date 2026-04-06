@@ -35,3 +35,10 @@ class LogoutService:
     def logout_user(*, refresh_token: str) -> None:
         token = RefreshToken(refresh_token)
         token.blacklist()
+
+
+class ChangePasswordService:
+    @staticmethod
+    def change_password(*, user, new_password: str) -> None:
+        user.set_password(new_password)
+        user.save(update_fields=["password"])

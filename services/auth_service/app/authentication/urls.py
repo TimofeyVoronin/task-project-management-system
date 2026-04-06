@@ -1,4 +1,5 @@
 from authentication.views import (
+    ChangePasswordAPIView,
     UserLoginAPIView,
     UserLogoutAPIView,
     UserMeAPIView,
@@ -15,4 +16,5 @@ urlpatterns = [
     path("logout/", UserLogoutAPIView.as_view(), name="logout"),
     path("me/", UserMeAPIView.as_view(), name="me"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("change-password/", ChangePasswordAPIView.as_view(), name="change_password"),
 ]
